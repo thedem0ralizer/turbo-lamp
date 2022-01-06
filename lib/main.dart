@@ -1,21 +1,52 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'settings/settings_controller.dart';
+import 'settings/settings_service.dart';
+import 'settings/settings_view.dart';
+
+void main() async {
+  final settingsController = SettingsController(SettingsService());
+  await settingsController.loadSettings();
+
+  runApp(MyApp(
+    settingsController: settingsController,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({
+    Key? key,
+    required this.settingsController,
+  }) : super(key: key);
+
+  final SettingsController settingsController;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
+    return AnimatedBuilder(
+        animation: settingsController,
+        builder: (context, Widget? child) {
+          return MaterialApp(
+            title: 'Flutter Demo',
+            theme: ThemeData(),
+            darkTheme: ThemeData.dark(),
+            themeMode: settingsController.themeMode,
+            onGenerateRoute: (RouteSettings routeSettings) {
+              debugPrint('route generated! : ${routeSettings.toString()}');
+              return MaterialPageRoute<void>(
+                settings: routeSettings,
+                builder: (BuildContext context) {
+                  switch (routeSettings.name) {
+                    case SettingsView.routeName:
+                      return SettingsView(controller: settingsController);
+                    default:
+                      return const MyHomePage(title: 'Flutter Demo Home Page');
+                  }
+                },
+              );
+            },
+          );
+        });
   }
 }
 
@@ -42,6 +73,14 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.restorablePushNamed(context, SettingsView.routeName);
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Column(
