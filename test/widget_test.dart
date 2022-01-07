@@ -26,5 +26,29 @@ void main() {
     // Verify that our counter has incremented.
     expect(find.text('0'), findsNothing);
     expect(find.text('1'), findsOneWidget);
+
+    expect(find.byIcon(Icons.settings), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.settings));
+    await tester.pump();
+
+    final Finder modeSelect = find.byType(DropdownButton<ThemeMode>);
+    final Finder settingsTitle = find.text('Settings');
+
+    await tester.pump();
+
+    expect(modeSelect, findsOneWidget);
+    expect(settingsTitle, findsOneWidget);
+
+    await tester.tap(modeSelect);
+
+    final Finder systemChoice = find.text('System Theme');
+    final Finder lightChoice = find.text('Light Theme');
+    final Finder darkChoice = find.text('Dark Theme');
+
+    await tester.pump();
+
+    expect(systemChoice, findsWidgets);
+    expect(lightChoice, findsWidgets);
+    expect(darkChoice, findsWidgets);
   });
 }
